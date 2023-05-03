@@ -13,9 +13,8 @@ import '../components/my_button.dart';
 import '../event.dart';
 import 'package:geolocator/geolocator.dart';
 
-
 //Global variables because they are loaded in a page early to instantly display data
-//on the next page when user has logged in. 
+//on the next page when user has logged in.
 //Ma
 var theResults;
 List items = [];
@@ -40,23 +39,16 @@ class Loginpage extends StatefulWidget {
   State<Loginpage> createState() => _LoginpageState();
 }
 
+//class for sign in user
 class _LoginpageState extends State<Loginpage> {
   // text editing controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final isarService = IsarService();
 
-  //sign user in
+  //function to sign in user
   Future signuserIn() async {
-    /// show login circle
-    // showDialog(
-    //     context: context,
-    //     builder: (context) {
-    //       return const Center(
-    //         child: CircularProgressIndicator(),
-    //       );
-    //     });
-
+    // calls firebase auth to make sure user is in firebase
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text, password: passwordController.text);
@@ -64,18 +56,15 @@ class _LoginpageState extends State<Loginpage> {
       Navigator.pushNamed(context, Calendar.id);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        /// Navigator.pop((context));
         wrongEmailMessage();
       } else if (e.code == 'wrong-password') {
-        // Navigator.pop((context));
         wrongPasswordMessage();
       }
     }
-
-    /// pop the circle off once user logins in
   }
 
-  /// wrong email and password message
+  /// wrong email and password function
+  /// pops up a message when user input wrong email or password
 
   void wrongEmailMessage() {
     showDialog(
@@ -96,6 +85,7 @@ class _LoginpageState extends State<Loginpage> {
           );
         });
   }
+  // dispose of the controllers after signing  in user
 
   @override
   void dispose() {
@@ -112,6 +102,10 @@ class _LoginpageState extends State<Loginpage> {
 
   void pull() async {
     theResults = await isarService.getEvents();
+    await readJson();
+    await getLocation();
+    await getWeather();
+    await getIcon();
   }
 
   Future<void> readJson() async {
@@ -122,7 +116,7 @@ class _LoginpageState extends State<Loginpage> {
     });
   }
 
-  void getWeather() async {
+  Future<void> getWeather() async {
     weather = await weatherService.getWeatherData(coords);
     setState(() {
       temp = weather.temperature;
@@ -132,7 +126,7 @@ class _LoginpageState extends State<Loginpage> {
     });
   }
 
-  void getLocation() async {
+  Future<void> getLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -162,7 +156,7 @@ class _LoginpageState extends State<Loginpage> {
     coords = "$lat,$lon";
   }
 
-  void getIcon() async {
+  Future<void> getIcon() async {
     counter = 0;
     if (weatherCode != 0) {
       while (items[counter]["code"] != weatherCode) {
@@ -175,10 +169,10 @@ class _LoginpageState extends State<Loginpage> {
 
   @override
   Widget build(BuildContext context) {
-    readJson();
-    getLocation();
-    getWeather();
-    getIcon();
+    // readJson();
+    // getLocation();
+    // getWeather();
+    // getIcon();
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 151, 53, 53),
       // ignore: prefer_const_literals_to_create_immutables
@@ -226,24 +220,6 @@ class _LoginpageState extends State<Loginpage> {
                       hinttext: "Password",
                       obscureText: true,
                     ),
-
-                    // //forgot password?
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 25.00),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.end,
-                    //     children: const [
-                    //       Text(
-                    //         'Forgot password?',
-                    //         style: TextStyle(
-                    //           color: Colors.white,
-                    //           fontSize: 15,
-                    //           fontWeight: FontWeight.bold,
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
 
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.00),
